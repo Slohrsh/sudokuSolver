@@ -1,1 +1,8 @@
-<p>sudoku-grid works!</p>
+<h1>Megahammergeiles Sudoku Programm</h1>
+<table>
+  <tr *ngFor="let cells of grid; let i = index">
+      <td *ngFor="let c of cells" [ngClass]="{'givenVal' : c.isGivenValue}">
+        <app-sudoku-cell [(cell)]="c"></app-sudoku-cell>
+      </td>
+  <tr>
+</table>
