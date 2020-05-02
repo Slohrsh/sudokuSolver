@@ -142,9 +142,6 @@ export class EliminatePencilmarksByNakedPairConstraints extends CellResolver imp
           }
         }
       }
-      else{
-        const a = 1;
-      }
     }
     return pencilmarks;
   }

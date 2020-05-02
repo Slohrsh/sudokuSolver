@@ -1,5 +1,9 @@
 import { Grid, Cell, Position } from '../common/cell';
 
+export enum GameState {
+  IDLE, SOLVE, PLAY
+}
+
 export class GridProvider {
 
   SIZE_X = 9;

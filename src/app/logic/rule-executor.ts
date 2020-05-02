@@ -27,13 +27,14 @@ export class RulesExecutor {
             const cell = this.get(x, y);
             if (!cell.isGivenValue || !cell.isSelected()) {
               rule.execute(this.get(x, y), this.gridProvider);
-              await this.delay(50);
+              await this.delay(5);
             }
           }
         }
       }
       iteration++;
     }
+    alert('Yay i Solved it! :)');
   }
 
   delay(ms: number) {

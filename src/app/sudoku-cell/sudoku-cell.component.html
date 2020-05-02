@@ -1,5 +1,5 @@
-<div *ngIf="cell.selection !== 0; else showPencilmarks">
-  <div class="selection">{{cell.selection}}</div>
+<div *ngIf="cell.selection !== 0 || isIdle(); else showPencilmarks">
+  <div *ngIf="cell.selection !== 0" class="selection">{{cell.selection}}</div>
 </div>
 <ng-template #showPencilmarks>
   <table>

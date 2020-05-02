@@ -1,8 +1,13 @@
 <h1>Megahammergeiles Sudoku Programm</h1>
 <table>
   <tr *ngFor="let cells of grid; let i = index">
-      <td *ngFor="let c of cells" [ngClass]="{'givenVal' : c.isGivenValue}">
-        <app-sudoku-cell [(cell)]="c"></app-sudoku-cell>
+      <td class="cell" *ngFor="let c of cells" [ngClass]="{'givenVal' : c.isGivenValue}" (click)="setSelectedCell(c)">
+        <app-sudoku-cell [(cell)]="c" [(gameState)]="gameState" ></app-sudoku-cell>
       </td>
   <tr>
 </table>
+
+<button (click)="execute()">Ausführen</button>
+<button (click)="clear(false)">Clear</button>
+<button (click)="clear(true)">Clear All</button>
+<button (click)="startPlaying()">Start Game</button>
