@@ -91,11 +91,12 @@ export class SudokuGridComponent implements OnInit {
   }
 
   setSelectedCell(cell: Cell, element) {
-    if(document.getElementsByClassName('focused').length > 0) {
-      document.getElementsByClassName('focused')[0].classList.remove('focused')
+    if (document.getElementsByClassName('focused').length > 0) {
+      document.getElementsByClassName('focused')[0].classList.remove('focused');
     }
+    console.log(element);
 
-    element.target.closest('.cell').classList.add('focused')
+    element.target.closest('.cell').classList.add('focused');
     this.selectedCell = cell;
   }
 
