@@ -90,7 +90,12 @@ export class SudokuGridComponent implements OnInit {
     this.clearAllPencilmarks();
   }
 
-  setSelectedCell(cell: Cell) {
+  setSelectedCell(cell: Cell, element) {
+    if(document.getElementsByClassName('focused').length > 0) {
+      document.getElementsByClassName('focused')[0].classList.remove('focused')
+    }
+
+    element.target.closest('.cell').classList.add('focused')
     this.selectedCell = cell;
   }
 

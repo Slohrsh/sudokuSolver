@@ -1,58 +1,40 @@
-<div *ngIf="cell.selection !== 0 || isIdle(); else showPencilmarks">
+<div *ngIf="cell.selection !== 0 || isIdle(); else showPencilmarks" class="selection-wrapper">
   <div *ngIf="cell.selection !== 0" class="selection">{{cell.selection}}</div>
 </div>
 <ng-template #showPencilmarks>
-  <table>
-    <tr>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(9) > -1">
-          9
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(8) > -1">
-          8
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(7) > -1">
-          7
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(6) > -1">
-          6
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(5) > -1">
-          5
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(4) > -1">
-          4
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(3) > -1">
-          3
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(2) > -1">
-          2
-        </div>
-      </td>
-      <td>
-        <div *ngIf="cell.pencilmarks.indexOf(1) > -1">
-          1
-        </div>
-      </td>
-    </tr>
-  </table>
+  <div class="inner-row-wrapper">
+    <div class="inner-row">
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(9) > -1">
+        9
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(8) > -1">
+        8
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(7) > -1">
+        7
+      </div>
+    </div>
+    <div class="inner-row">
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(6) > -1">
+        6
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(5) > -1">
+        5
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(4) > -1">
+        4
+      </div>
+    </div>
+    <div class="inner-row">
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(3) > -1">
+        3
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(2) > -1">
+        2
+      </div>
+      <div class="inner-cell" *ngIf="cell.pencilmarks.indexOf(1) > -1">
+        1
+      </div>
+    </div>
+  </div>
 </ng-template>

@@ -1,1 +1,170 @@
 /* You can add global styles to this file, and also import other style files */
+
+$border-color: #888888;
+$background-color-light-blue: #defcfc;
+$background-color-dark-blue: #a6e3e9;
+
+body {
+  background-color: #f5f5f5;
+  font-family: "Roboto", sans-serif;
+
+  h1 {
+    text-align: center;
+  }
+
+  .container {
+    display: grid;
+    max-width: 550px;
+    margin: 0 auto;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas: ". . ." ". . ." ". . .";
+
+    .wrapper {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      grid-template-areas: ". . ." ". . ." ". . .";
+      text-align: center;
+      border-right: 3px solid $border-color;
+      border-bottom: 3px solid $border-color;
+      background-color: $background-color-light-blue;
+
+      &:nth-child(2n + 2) {
+        background-color: $background-color-dark-blue;
+      }
+
+      &:nth-child(3n + 1) {
+        border-left: 3px solid $border-color;
+      }
+
+      &:nth-child(1) {
+        border-top: 3px solid $border-color;
+      }
+
+      &:nth-child(2) {
+        border-top: 3px solid $border-color;
+      }
+
+      &:nth-child(3) {
+        border-top: 3px solid $border-color;
+      }
+
+      .cell {
+        display: grid;
+        font-size: 7px;
+        cursor: pointer;
+
+        &:hover,
+        &.focused {
+          background-color: #F5F1A4;
+        }
+
+
+        &:nth-child(3n + 1) {
+          border-right: 1px solid $border-color;
+        }
+        &:nth-child(3n + 2) {
+          border-right: 1px solid $border-color;
+        }
+        &:nth-child(1n + 4) {
+          border-top: 1px solid $border-color;
+        }
+
+        @media screen and (min-width: 420px) {
+          font-size: 12px;
+        }
+
+        @media screen and (min-width: 768px) {
+          font-size: 16px;
+        }
+
+        &.selected-cell {
+          font-size: 18px;
+
+          @media screen and (min-width: 420px) {
+            font-size: 24px;
+          }
+        }
+
+        &.givenVal {
+          .selection {
+            opacity: 0.5;
+            font-weight: bold;
+          }
+        }
+
+        .app-sudoku-cell {
+          display: block;
+          padding-bottom: calc(100% / (1 / 1));
+          position: relative;
+          height: 0;
+          display: grid;
+
+          .inner-row-wrapper {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            align-items: center;
+            display: grid;
+
+            .inner-row {
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              grid-template-rows: 1fr;
+              grid-template-areas: ". . .";
+
+              .inner-cell {
+                display: block;
+                color: #555;
+              }
+            }
+          }
+
+          .selection-wrapper {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            align-items: center;
+            display: grid;
+          }
+        }
+      }
+    }
+  }
+
+  .button-wrapper {
+    margin-top: 30px;
+    text-align: center;
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: 0;
+      box-shadow: none;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s transform;
+
+      @media screen and (min-width: 420px) {
+        font-size: 18px;
+      }
+
+      @media screen and (min-width: 768px) {
+        font-size: 22px;
+      }
+
+      &:hover,
+      &:focus {
+        transform: scale(1.05);
+        outline: none;
+      }
+    }
+  }
+}
