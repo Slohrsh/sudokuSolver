@@ -1,14 +1,14 @@
 import { debug } from 'util';
 
 export class Grid {
-  cell: Cell[][];
+  cells: Cell[][];
 
   constructor(cell: Cell[][]) {
-    this.cell = cell;
+    this.cells = cell;
   }
 
-  get(x: number, y: number) {
-    return this.cell[y][x];
+  get(cell: number, box: number) {
+    return this.cells[box][cell];
   }
 }
 
@@ -32,9 +32,8 @@ export class Cell {
     return this.selection !== 0;
   }
 
-  equals(cell: Cell)
-  {
-    return (this.position.x === cell.position.x && this.position.y === cell.position.y);
+  equals(cell: Cell) {
+    return (this.position.cell === cell.position.cell && this.position.box === cell.position.box);
   }
 
   containsPencilmark(selection: number) {
@@ -49,11 +48,11 @@ export class Cell {
 }
 
 export class Position {
-  x: number;
-  y: number;
+  cell: number;
+  box: number;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+  constructor(cell: number, box: number) {
+    this.cell = cell;
+    this.box = box;
   }
 }

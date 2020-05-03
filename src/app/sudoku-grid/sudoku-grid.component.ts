@@ -3,6 +3,7 @@ import { Cell, Position } from '../common/cell';
 import { GridProvider, GameState } from '../game/grid-provider';
 import { RulesExecutor } from '../logic/rule-executor';
 import { ActivatedRoute } from '@angular/router';
+import { LogicExplanation } from '../common/LogicExplanation';
 
 @Component({
   selector: 'app-sudoku-grid',
@@ -12,15 +13,15 @@ import { ActivatedRoute } from '@angular/router';
 export class SudokuGridComponent implements OnInit {
 
   private gridRaw: number[][] = [
-    [0, 0, 0, 2, 6, 0, 7, 0, 1],
-    [6, 8, 0, 0, 7, 0, 0, 9, 0],
-    [1, 9, 0, 0, 0, 4, 5, 0, 0],
-    [8, 2, 0, 1, 0, 0, 0, 4, 0],
-    [0, 0, 4, 6, 0, 2, 9, 0, 0],
-    [0, 5, 0, 0, 0, 3, 0, 2, 8],
-    [0, 0, 9, 3, 0, 0, 0, 7, 4],
-    [0, 4, 0, 0, 5, 0, 0, 3, 6],
-    [7, 0, 3, 0, 1, 8, 0, 0, 0]
+    [0, 0, 0, 6, 8, 0, 1, 9, 0],
+    [2, 6, 0, 0, 7, 0, 0, 0, 4],
+    [7, 0, 1, 0, 9, 0, 5, 0, 0],
+    [8, 2, 0, 0, 0, 4, 0, 5, 0],
+    [1, 0, 0, 6, 0, 2, 0, 0, 3],
+    [0, 4, 0, 9, 0, 0, 0, 2, 8],
+    [0, 0, 9, 0, 4, 0, 7, 0, 3],
+    [3, 0, 0, 0, 5, 0, 0, 1, 8],
+    [0, 7, 4, 0, 3, 6, 0, 0, 0]
   ];
 
   grid: Cell[][];
@@ -29,6 +30,9 @@ export class SudokuGridComponent implements OnInit {
   private selectedCell: Cell;
 
   gameState: GameState = GameState.IDLE;
+
+  currentExecutedRule: string;
+  currentExecutedRuleDescription: string;
 
   constructor(
     private route: ActivatedRoute
@@ -58,12 +62,45 @@ export class SudokuGridComponent implements OnInit {
 
     const provider = new GridProvider(this.grid);
     this.executor = new RulesExecutor(provider);
+
+    console.log(this.generateExportGrid());
   }
 
   execute() {
     this.gameState = GameState.SOLVE;
+
+    this.executor.getSelectedCellsSubject().subscribe((explanation: LogicExplanation) => {
+      this.highlightSelectedCells(explanation.cells);
+      this.currentExecutedRule = explanation.rule;
+      this.currentExecutedRuleDescription = explanation.description;
+    });
+
     this.executor.execute();
   }
+
+
+
+  highlightSelectedCells(cells: Cell[]) {
+    this.unselectAll();
+    for (const cell of cells) {
+      const cellClass = 'cell-[' + cell.position.box + '][' + cell.position.cell + ']';
+      const cellsToHighlight = document.getElementsByClassName(cellClass);
+      Array.prototype.forEach.call(cellsToHighlight, (cellToHighlight) => {
+        cellToHighlight.classList.add('focused');
+      });
+    }
+  }
+
+  unselectAll() {
+    const highilghtedElements = document.getElementsByClassName('focused');
+    if (highilghtedElements != null) {
+      const len = highilghtedElements.length;
+      for (let i = 0; i < len; i++) {
+        highilghtedElements[0].classList.remove('focused');
+      }
+    }
+  }
+
 
   clear(clearAll: boolean) {
     this.gameState = GameState.IDLE;
@@ -94,19 +131,18 @@ export class SudokuGridComponent implements OnInit {
     if (document.getElementsByClassName('focused').length > 0) {
       document.getElementsByClassName('focused')[0].classList.remove('focused');
     }
-    console.log(element);
 
     element.target.closest('.cell').classList.add('focused');
     this.selectedCell = cell;
   }
 
   generateExportGrid(): string {
-    const exportGrid = [] ;
+    const exportGrid = [];
     let emptyCount = 0;
     for (let y = 0; y < this.grid.length; y++) {
       for (let x = 0; x < this.grid.length; x++) {
         const cell = this.grid[y][x];
-        if (cell.isGivenValue ) {
+        if (cell.isGivenValue) {
           if (emptyCount > 0) {
             if (emptyCount < 10) {
               exportGrid.push(0);
@@ -116,7 +152,7 @@ export class SudokuGridComponent implements OnInit {
           exportGrid.push(cell.selection);
           emptyCount = 0;
         } else {
-          if ( emptyCount === 0) {
+          if (emptyCount === 0) {
             exportGrid.push('x');
           }
           emptyCount++;
@@ -135,7 +171,7 @@ export class SudokuGridComponent implements OnInit {
   }
 
   initGivenGrid(givenGrid: string) {
-    const vals = [... givenGrid];
+    const vals = [...givenGrid];
     let x = 0;
     let y = -1;
     let emptyCells = false;
@@ -160,7 +196,7 @@ export class SudokuGridComponent implements OnInit {
 
       if (emptyCells) {
         this.grid[y][x] = new Cell(0, new Position(x, y));
-        emptyCellsCount --;
+        emptyCellsCount--;
       } else {
         this.grid[y][x] = new Cell(Number(vals[index]), new Position(x, y));
         index++;

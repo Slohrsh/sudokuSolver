@@ -3,6 +3,8 @@ import { RuleObserver, Rule } from './rule';
 import { Cell } from '../common/cell';
 import { NakedSingleResolver } from './rules/NakedSingleResolver';
 import { debug } from 'util';
+import { Observable, Subject } from 'rxjs';
+import { LogicExplanation } from '../common/LogicExplanation';
 
 export class RulesExecutor {
 
@@ -10,9 +12,17 @@ export class RulesExecutor {
 
   gridProvider: GridProvider;
 
+  selectedCells$: Subject<LogicExplanation>;
+
   constructor(gridProvider: GridProvider) {
     this.gridProvider = gridProvider;
   }
+
+  getSelectedCellsSubject(): Subject<LogicExplanation> {
+    this.selectedCells$ = new Subject();
+    return this.selectedCells$;
+  }
+
 
   async execute() {
     const rules: Rule[] = new RuleObserver().getImplementations();
@@ -25,9 +35,9 @@ export class RulesExecutor {
         for (let x = 0; x < this.getSizeX(); x++) {
           for (const rule of rules) {
             const cell = this.get(x, y);
-            if (!cell.isGivenValue || !cell.isSelected()) {
-              rule.execute(this.get(x, y), this.gridProvider);
-              await this.delay(5);
+            if (!cell.isSelected()) {
+              rule.execute(this.get(x, y), this.gridProvider, this.selectedCells$);
+              await this.delay(1000);
             }
           }
         }

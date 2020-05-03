@@ -5,9 +5,11 @@ import { EliminatePencilmarksByCurrentBoxConstraints } from './rules/EliminatePe
 import { EliminatePencilmarksByCurrentColConstraints } from './rules/EliminatePencilmarksByCurrentColConstraints';
 import { EliminatePencilmarksByCurrentRowConstraints } from './rules/EliminatePencilmarksByCurrentRowConstraints';
 import { EliminatePencilmarksByNakedPairConstraints } from './rules/EliminatePencilmarksByNakedPairConstraints';
+import { Observable, Subject } from 'rxjs';
+import { LogicExplanation } from '../common/LogicExplanation';
 
 export interface Rule {
-  execute(cell: Cell, grid: GridProvider): void;
+  execute(cell: Cell, grid: GridProvider, selectedCells: Subject<LogicExplanation>): void;
 }
 
 export class RuleObserver {
@@ -19,7 +21,7 @@ export class RuleObserver {
     this.register(new EliminatePencilmarksByCurrentBoxConstraints());
     this.register(new EliminatePencilmarksByCurrentRowConstraints());
     this.register(new EliminatePencilmarksByCurrentColConstraints());
-    this.register(new EliminatePencilmarksByNakedPairConstraints());
+    //this.register(new EliminatePencilmarksByNakedPairConstraints());
   }
 
   getImplementations(): Rule[] {

@@ -4,7 +4,17 @@ import { Cell } from 'src/app/common/cell';
 import { EliminatePencilmarksByConstraints } from './EliminatePencilmarksByConstraints';
 
 export class EliminatePencilmarksByCurrentRowConstraints extends EliminatePencilmarksByConstraints {
-  getRelevantCells(grid: GridProvider, cell: Cell): Cell[] {
-    return grid.getCellsOfCurrentRow(cell.position, true);
+  private rule = 'Current Row Constraints';
+  private description = 'Removes all pencilmarks of Cell for current selections in this row';
+
+  getRelevantCells(grid: GridProvider, cell: Cell, forUiPurpose: boolean): Cell[] {
+    return grid.getCellsOfCurrentRow(cell.position, true && !forUiPurpose);
+  }
+
+  getRuleName(): string {
+    return this.rule;
+  }
+  getDescription(): string {
+    return this.description;
   }
 }

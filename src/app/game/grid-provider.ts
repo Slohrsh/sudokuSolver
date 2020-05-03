@@ -26,31 +26,72 @@ export class GridProvider {
     return true;
   }
 
-  getCellsOfCurrentBox(position: Position, onlySelected: boolean): Cell[] {
-    const boxCenterPosition = this.getCenterPositionOfBox(position);
-    const cells: Cell[] = [];
-
-    this.addCells(cells, this.grid.get(boxCenterPosition.x - 1, boxCenterPosition.y - 1), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x, boxCenterPosition.y - 1), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x + 1, boxCenterPosition.y - 1), onlySelected);
-
-    this.addCells(cells, this.grid.get(boxCenterPosition.x - 1, boxCenterPosition.y), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x, boxCenterPosition.y), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x + 1, boxCenterPosition.y), onlySelected);
-
-    this.addCells(cells, this.grid.get(boxCenterPosition.x - 1, boxCenterPosition.y + 1), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x, boxCenterPosition.y + 1), onlySelected);
-    this.addCells(cells, this.grid.get(boxCenterPosition.x + 1, boxCenterPosition.y + 1), onlySelected);
-
-    return cells;
-  }
 
   addCells(cells: Cell[], cell: Cell, onlySelected: boolean) {
+    if (cell == null) {
+      const a = 0;
+    }
     if (!onlySelected || cell.isSelected()) {
       cells.push(cell);
     }
   }
 
+  getCellsOfCurrentBox(position: Position, onlySelected: boolean): Cell[] {
+    return this.grid.cells[position.box].filter(cell => !onlySelected || cell.isSelected());
+  }
+
+
+  getCellsOfCurrentRow(position: Position, onlySelected: boolean) {
+    const cells: Cell[] = [];
+
+    const boxRow = this.getCurrentRowSummand(position.box);
+    const cellRow = this.getCurrentRowSummand(position.cell);
+
+    for (let box = 0; box < 3; box++) {
+      for (let cell = 0; cell < 3; cell++) {
+        this.addCells(cells, this.grid.get(cell + cellRow, box + boxRow), onlySelected);
+      }
+    }
+
+    return cells;
+  }
+
+  getCellsOfCurrentColumn(position: Position, onlySelected: boolean): Cell[] {
+    const cells: Cell[] = [];
+
+    const boxCol = this.getCurrentColumnSummand(position.box);
+    const cellCol = this.getCurrentColumnSummand(position.cell);
+
+    const iter = [0, 3, 6];
+
+    for (const box of iter) {
+      for (const cell of iter) {
+        this.addCells(cells, this.grid.get(cell + cellCol, box + boxCol), onlySelected);
+      }
+    }
+
+    return cells;
+  }
+
+  getCurrentRowSummand(box: number): number {
+    if (box === 0 || box === 1 || box === 2) {
+      return 0;
+    } else if (box === 3 || box === 4 || box === 5) {
+      return 3;
+    } else if (box === 6 || box === 7 || box === 8) {
+      return 6;
+    }
+  }
+
+  getCurrentColumnSummand(box: number): number {
+    if (box === 0 || box === 3 || box === 6) {
+      return 0;
+    } else if (box === 1 || box === 4 || box === 7) {
+      return 1;
+    } else if (box === 2 || box === 5 || box === 8) {
+      return 2;
+    }
+  }
 
   getCellsOfCurrentRowAndCol(position: Position, onlySelected: boolean): Cell[] {
     const cells: Cell[] = [];
@@ -61,73 +102,4 @@ export class GridProvider {
     return cells;
   }
 
-  getCellsOfCurrentRow(position: Position, onlySelected: boolean) {
-    const cells: Cell[] = [];
-
-    for (let x = position.x; x >= 0; x--) {
-      this.addCells(cells, this.grid.get(x, position.y), onlySelected);
-    }
-    for (let x = position.x; x < this.SIZE_X; x++) {
-      this.addCells(cells, this.grid.get(x, position.y), onlySelected);
-    }
-
-    return cells;
-  }
-
-  getCellsOfCurrentColumn(position: Position, onlySelected: boolean): Cell[] {
-    const cells: Cell[] = [];
-
-    for (let y = position.y; y >= 0; y--)  {
-      this.addCells(cells, this.grid.get(position.x, y), onlySelected);
-    }
-    for (let y = position.y; y < this.SIZE_Y; y++) {
-      this.addCells(cells, this.grid.get(position.x, y), onlySelected);
-    }
-
-    return cells;
-  }
-
-  getCenterPositionOfBox(position: Position): Position {
-    const boxPosition: Position = new Position(this.getRowPos(position.x), this.getRowPos(position.y));
-
-    if (boxPosition.x === 0 && boxPosition.y === 0) {
-      return new Position(1, 1);
-    }
-    if (boxPosition.x === 1 && boxPosition.y === 0) {
-      return new Position(4, 1);
-    }
-    if (boxPosition.x === 2 && boxPosition.y === 0) {
-      return new Position(7, 1);
-    }
-
-    if (boxPosition.x === 0 && boxPosition.y === 1) {
-      return new Position(1, 4);
-    }
-    if (boxPosition.x === 1 && boxPosition.y === 1) {
-      return new Position(4, 4);
-    }
-    if (boxPosition.x === 2 && boxPosition.y === 1) {
-      return new Position(7, 4);
-    }
-
-    if (boxPosition.x === 0 && boxPosition.y === 2) {
-      return new Position(1, 7);
-    }
-    if (boxPosition.x === 1 && boxPosition.y === 2) {
-      return new Position(4, 7);
-    }
-    if (boxPosition.x === 2 && boxPosition.y === 2) {
-      return new Position(7, 7);
-    }
-  }
-
-  getRowPos(pos: number) {
-    if (pos < 3) {
-      return 0;
-    } else if (pos >= 3 && pos < 6) {
-      return 1;
-    } else if (pos >= 6) {
-      return 2;
-    }
-  }
 }

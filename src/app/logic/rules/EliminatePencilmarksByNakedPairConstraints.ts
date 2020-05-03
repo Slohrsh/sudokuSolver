@@ -2,37 +2,39 @@ import { Rule } from '../rule';
 import { GridProvider } from 'src/app/game/grid-provider';
 import { Cell, Position } from 'src/app/common/cell';
 import { CellResolver } from './CellResolver';
+import { Subject } from 'rxjs';
+import { LogicExplanation } from 'src/app/common/LogicExplanation';
 
 export class EliminatePencilmarksByNakedPairConstraints extends CellResolver implements Rule {
 
-  execute(cell: Cell, grid: GridProvider): void {
+  execute(cell: Cell, grid: GridProvider, selectedCells: Subject<LogicExplanation>): void {
     const cellsOfCurrentBox = grid.getCellsOfCurrentBox(cell.position, false);
-    const center = grid.getCenterPositionOfBox(cell.position);
+    const center = new Position(4, cell.position.box);
     this.eliminateSameRowPrediction(center, cellsOfCurrentBox, grid);
     this.eliminateSameColumnPrediction(center, cellsOfCurrentBox, grid);
   }
 
   eliminateSameRowPrediction(center: Position, cellsOfCurrentBox: Cell[], grid: GridProvider) {
-    const predictionsAtFirstRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.y - 1);
-    const predictionsAtSecondRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.y);
-    const predictionsAtThirdRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.y + 1);
+    const predictionsAtFirstRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box - 1);
+    const predictionsAtSecondRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box);
+    const predictionsAtThirdRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box + 1);
 
     this.eliminateSameLinePredictionIfPossible(
-      new Position(center.x, center.y - 1),
+      new Position(center.cell, center.box - 1),
       grid,
       predictionsAtFirstRow,
       predictionsAtSecondRow,
       predictionsAtThirdRow,
       cellsOfCurrentBox);
     this.eliminateSameLinePredictionIfPossible(
-      new Position(center.x, center.y),
+      new Position(center.cell, center.box),
       grid,
       predictionsAtSecondRow,
       predictionsAtFirstRow,
       predictionsAtThirdRow,
       cellsOfCurrentBox);
     this.eliminateSameLinePredictionIfPossible(
-      new Position(center.x, center.y + 1),
+      new Position(center.cell, center.box + 1),
       grid,
       predictionsAtThirdRow,
       predictionsAtFirstRow,
@@ -41,12 +43,12 @@ export class EliminatePencilmarksByNakedPairConstraints extends CellResolver imp
   }
 
   eliminateSameColumnPrediction(center: Position, cellsOfCurrentBox: Cell[], grid: GridProvider) {
-    const predictionsAtFirstColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.x - 1);
-    const predictionsAtSecondColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.x);
-    const predictionsAtThirdColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.x + 1);
+    const predictionsAtFirstColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell - 1);
+    const predictionsAtSecondColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell);
+    const predictionsAtThirdColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell + 1);
 
     this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.x - 1, center.y),
+      new Position(center.cell - 1, center.box),
       grid,
       predictionsAtFirstColumn,
       predictionsAtSecondColumn,
@@ -54,7 +56,7 @@ export class EliminatePencilmarksByNakedPairConstraints extends CellResolver imp
       cellsOfCurrentBox);
 
     this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.x, center.y),
+      new Position(center.cell, center.box),
       grid,
       predictionsAtSecondColumn,
       predictionsAtFirstColumn,
@@ -62,7 +64,7 @@ export class EliminatePencilmarksByNakedPairConstraints extends CellResolver imp
       cellsOfCurrentBox);
 
     this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.x + 1, center.y),
+      new Position(center.cell + 1, center.box),
       grid,
       predictionsAtThirdColumn,
       predictionsAtFirstColumn,
@@ -123,12 +125,12 @@ export class EliminatePencilmarksByNakedPairConstraints extends CellResolver imp
   }
 
   getPencilmarksAtRow(cellsOfCurrentBox: Cell[], line: number): number[] {
-    const cellsOfCurrentRow = cellsOfCurrentBox.filter(cell => cell.position.y === line);
+    const cellsOfCurrentRow = cellsOfCurrentBox.filter(cell => cell.position.box === line);
     return this.getPencilmarks(cellsOfCurrentRow);
   }
 
   getPencilmarksAtColumn(cellsOfCurrentBox: Cell[], column: number): number[] {
-    const cellsOfCurrentColumn = cellsOfCurrentBox.filter(cell => cell.position.x === column);
+    const cellsOfCurrentColumn = cellsOfCurrentBox.filter(cell => cell.position.cell === column);
     return this.getPencilmarks(cellsOfCurrentColumn);
   }
 

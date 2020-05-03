@@ -1,8 +1,16 @@
 <h1>Megahammergeiles Sudoku Programm</h1>
 
+<div class="explanation" *ngIf="currentExecutedRule">
+  <h2 class="centerString">Currently Rule is running: {{currentExecutedRule}}</h2>
+  <i class="centerString">Description: {{currentExecutedRuleDescription}}</i>
+</div>
+
 <div class="container">
-  <div class="wrapper" *ngFor="let cells of grid; let i = index">
-    <div class="cell" *ngFor="let c of cells" [ngClass]="{'givenVal' : c.isGivenValue, 'selected-cell' : c.selection !== 0}" (click)="setSelectedCell(c, $event)">
+  <div class="wrapper" *ngFor="let cells of grid">
+    <div *ngFor="let c of cells"
+      class="cell cell-[{{c.position.box}}][{{c.position.cell}}]"
+      [ngClass]="{'givenVal' : c.isGivenValue, 'selected-cell' : c.selection !== 0}"
+      (click)="setSelectedCell(c, $event)">
       <app-sudoku-cell class="app-sudoku-cell" [(cell)]="c" [(gameState)]="gameState" ></app-sudoku-cell>
     </div>
   </div>
