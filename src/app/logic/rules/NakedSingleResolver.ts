@@ -16,4 +16,5 @@ export class NakedSingleResolver implements Rule {
       cell.pencilmarks = [];
     }
   }
+
 }
