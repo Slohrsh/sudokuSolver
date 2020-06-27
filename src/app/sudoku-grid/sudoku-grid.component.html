@@ -1,4 +1,6 @@
-<h1>Megahammergeiles Sudoku Programm</h1>
+<h1>Sudoku Solver</h1>
+
+<img  class="center" [src]="doki" width="50" height="250">
 
 <div class="explanation" *ngIf="currentExecutedRule">
   <h2 class="centerString">Currently Rule is running: {{currentExecutedRule}}</h2>
@@ -17,8 +19,9 @@
 </div>
 
 <div class="button-wrapper">
-  <button (click)="execute()">Ausführen</button>
+  <button (click)="execute()">Execute</button>
   <button (click)="clear(false)">Clear</button>
   <button (click)="clear(true)">Clear All</button>
   <button (click)="startPlaying()">Start Game</button>
+  <button (click)="validate()">Validate</button>
 </div>

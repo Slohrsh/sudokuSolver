@@ -4,6 +4,9 @@ import { GridProvider, GameState } from '../game/grid-provider';
 import { RulesExecutor } from '../logic/rule-executor';
 import { ActivatedRoute } from '@angular/router';
 import { LogicExplanation } from '../common/LogicExplanation';
+import { GridValidation } from '../logic/validation/GridValidation';
+import { Config } from '../game/config';
+import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-sudoku-grid',
@@ -11,18 +14,6 @@ import { LogicExplanation } from '../common/LogicExplanation';
   styleUrls: ['./sudoku-grid.component.scss']
 })
 export class SudokuGridComponent implements OnInit {
-
-  private gridRaw: number[][] = [
-    [0, 0, 0, 6, 8, 0, 1, 9, 0],
-    [2, 6, 0, 0, 7, 0, 0, 0, 4],
-    [7, 0, 1, 0, 9, 0, 5, 0, 0],
-    [8, 2, 0, 0, 0, 4, 0, 5, 0],
-    [1, 0, 0, 6, 0, 2, 0, 0, 3],
-    [0, 4, 0, 9, 0, 0, 0, 2, 8],
-    [0, 0, 9, 0, 4, 0, 7, 0, 3],
-    [3, 0, 0, 0, 5, 0, 0, 1, 8],
-    [0, 7, 4, 0, 3, 6, 0, 0, 0]
-  ];
 
   grid: Cell[][];
   private executor: RulesExecutor;
@@ -34,8 +25,13 @@ export class SudokuGridComponent implements OnInit {
   currentExecutedRule: string;
   currentExecutedRuleDescription: string;
 
+  provider: GridProvider;
+
+  doki: string;
+
   constructor(
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) { }
 
   @HostListener('document:keypress', ['$event'])
@@ -51,7 +47,7 @@ export class SudokuGridComponent implements OnInit {
   }
 
   ngOnInit() {
-
+    this.doki = '../../assets/waving1.svg';
     this.grid = [];
     const givenGrid = this.route.snapshot.paramMap.get('grid');
     if (givenGrid) {
@@ -60,33 +56,54 @@ export class SudokuGridComponent implements OnInit {
       this.initDefaultGrid();
     }
 
-    const provider = new GridProvider(this.grid);
-    this.executor = new RulesExecutor(provider);
+    this.provider = new GridProvider(this.grid);
+    this.executor = new RulesExecutor(this.provider);
 
     console.log(this.generateExportGrid());
   }
 
   execute() {
+    this.doki = '../../assets/thinking.svg';
     this.gameState = GameState.SOLVE;
 
     this.executor.getSelectedCellsSubject().subscribe((explanation: LogicExplanation) => {
-      this.highlightSelectedCells(explanation.cells);
+      this.highlightSelectedCells(explanation.cells, false);
       this.currentExecutedRule = explanation.rule;
       this.currentExecutedRuleDescription = explanation.description;
     });
 
-    this.executor.execute();
+    this.executor.execute().then(() => {
+      this.validate();
+      if (this.executor.isSolved()) {
+        this.doki = '../../assets/happy.svg';
+      } else {
+        this.doki = '../../assets/sad.svg';
+      }
+    });
+  }
+
+  validate() {
+    const validationResult = new GridValidation(this.provider).validate();
+
+    if (validationResult.hasInvalidCells()) {
+      this.highlightSelectedCells(validationResult.invalidCells, true);
+    }
+    console.log(validationResult);
   }
 
 
 
-  highlightSelectedCells(cells: Cell[]) {
+  highlightSelectedCells(cells: Cell[], isError: boolean) {
     this.unselectAll();
     for (const cell of cells) {
       const cellClass = 'cell-[' + cell.position.box + '][' + cell.position.cell + ']';
       const cellsToHighlight = document.getElementsByClassName(cellClass);
       Array.prototype.forEach.call(cellsToHighlight, (cellToHighlight) => {
-        cellToHighlight.classList.add('focused');
+        if (isError) {
+          cellToHighlight.classList.add('error');
+        } else {
+          cellToHighlight.classList.add('focused');
+        }
       });
     }
   }
@@ -219,10 +236,13 @@ export class SudokuGridComponent implements OnInit {
 
 
   private initDefaultGrid() {
-    for (let y = 0; y < this.gridRaw.length; y++) {
+    const config = Config.getInstance();
+    const gridRaw = config.defaultGrid;
+
+    for (let y = 0; y < gridRaw.length; y++) {
       this.grid[y] = [];
-      for (let x = 0; x < this.gridRaw.length; x++) {
-        this.grid[y][x] = new Cell(this.gridRaw[y][x], new Position(x, y));
+      for (let x = 0; x < gridRaw.length; x++) {
+        this.grid[y][x] = new Cell(gridRaw[y][x], new Position(x, y));
       }
     }
   }

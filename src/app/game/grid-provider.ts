@@ -41,56 +41,30 @@ export class GridProvider {
   }
 
 
-  getCellsOfCurrentRow(position: Position, onlySelected: boolean) {
+  getCellsOfCurrentColumn(cellPosition: Position, onlySelected: boolean) {
     const cells: Cell[] = [];
 
-    const boxRow = this.getCurrentRowSummand(position.box);
-    const cellRow = this.getCurrentRowSummand(position.cell);
-
-    for (let box = 0; box < 3; box++) {
-      for (let cell = 0; cell < 3; cell++) {
-        this.addCells(cells, this.grid.get(cell + cellRow, box + boxRow), onlySelected);
-      }
+    for (let i = 0; i < 9; i++) {
+      const position = new Position(
+        (((i % 3) * 3) % 7) + cellPosition.cell % 3,
+        (Math.floor(i / 3) * 3) % 7 + cellPosition.box % 3);
+      this.addCells(cells, this.grid.get(position.cell, position.box), onlySelected);
     }
 
     return cells;
   }
 
-  getCellsOfCurrentColumn(position: Position, onlySelected: boolean): Cell[] {
+  getCellsOfCurrentRow(cellPosition: Position, onlySelected: boolean): Cell[] {
     const cells: Cell[] = [];
 
-    const boxCol = this.getCurrentColumnSummand(position.box);
-    const cellCol = this.getCurrentColumnSummand(position.cell);
-
-    const iter = [0, 3, 6];
-
-    for (const box of iter) {
-      for (const cell of iter) {
-        this.addCells(cells, this.grid.get(cell + cellCol, box + boxCol), onlySelected);
-      }
+    for (let i = 0; i < 9; i++) {
+      const position = new Position(
+        (i % 3) + (Math.floor(cellPosition.cell / 3) * 3),
+        Math.floor(i / 3) + (Math.floor(cellPosition.box / 3) * 3));
+      this.addCells(cells, this.grid.get(position.cell, position.box), onlySelected);
     }
 
     return cells;
-  }
-
-  getCurrentRowSummand(box: number): number {
-    if (box === 0 || box === 1 || box === 2) {
-      return 0;
-    } else if (box === 3 || box === 4 || box === 5) {
-      return 3;
-    } else if (box === 6 || box === 7 || box === 8) {
-      return 6;
-    }
-  }
-
-  getCurrentColumnSummand(box: number): number {
-    if (box === 0 || box === 3 || box === 6) {
-      return 0;
-    } else if (box === 1 || box === 4 || box === 7) {
-      return 1;
-    } else if (box === 2 || box === 5 || box === 8) {
-      return 2;
-    }
   }
 
   getCellsOfCurrentRowAndCol(position: Position, onlySelected: boolean): Cell[] {
@@ -100,6 +74,26 @@ export class GridProvider {
     cells.concat(this.getCellsOfCurrentColumn(position, onlySelected));
 
     return cells;
+  }
+
+  getAllCellsByPencilmark(cellsToCheck: Cell[], pencilmark: number): Cell[] {
+    const foundCells: Cell[] = [];
+    for (const cell of cellsToCheck) {
+      if (cell.pencilmarks && cell.pencilmarks.includes(pencilmark)) {
+        foundCells.push(cell);
+      }
+    }
+    return foundCells;
+  }
+
+  getOtherCellsByPencilmarkOrSelection(currentCell: Cell, cellsToCheck: Cell[], pencilmark: number): Cell[] {
+    const foundCells: Cell[] = [];
+    for (const cell of cellsToCheck) {
+      if (!currentCell.equals(cell) && (cell.pencilmarks && cell.pencilmarks.includes(pencilmark)) || cell.selection === pencilmark) {
+        foundCells.push(cell);
+      }
+    }
+    return foundCells;
   }
 
 }

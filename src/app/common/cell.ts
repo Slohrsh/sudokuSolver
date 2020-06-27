@@ -40,10 +40,12 @@ export class Cell {
     return this.pencilmarks.includes(selection);
   }
 
-  removePencilmark(selection: number) {
+  removePencilmark(selection: number): boolean {
     if (this.pencilmarks != null && this.containsPencilmark(selection)) {
       this.pencilmarks.splice(this.pencilmarks.indexOf(selection), 1);
+      return true;
     }
+    return false;
   }
 }
 

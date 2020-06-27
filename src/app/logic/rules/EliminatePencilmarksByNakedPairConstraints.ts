@@ -1,151 +1,134 @@
-import { Rule } from '../rule';
+import { BoxRule } from '../rule';
 import { GridProvider } from 'src/app/game/grid-provider';
 import { Cell, Position } from 'src/app/common/cell';
 import { CellResolver } from './CellResolver';
 import { Subject } from 'rxjs';
 import { LogicExplanation } from 'src/app/common/LogicExplanation';
 
-export class EliminatePencilmarksByNakedPairConstraints extends CellResolver implements Rule {
+export class EliminatePencilmarksByNakedPairConstraints extends CellResolver implements BoxRule {
 
-  execute(cell: Cell, grid: GridProvider, selectedCells: Subject<LogicExplanation>): void {
-    const cellsOfCurrentBox = grid.getCellsOfCurrentBox(cell.position, false);
-    const center = new Position(4, cell.position.box);
-    this.eliminateSameRowPrediction(center, cellsOfCurrentBox, grid);
-    this.eliminateSameColumnPrediction(center, cellsOfCurrentBox, grid);
+  private rule = 'Naked Pair Constraints';
+  private description = 'You can remove all pencilmarks for row or Cell if there is a naked pair in the box';
+
+  execute(currentBox: Position, provider: GridProvider, selectedCells: Subject<LogicExplanation>): boolean {
+
+    const nakedPairInRow = this.getNakedPairs(currentBox, provider, this.isNakedPairInRow);
+    const nakedPairInColumn = this.getNakedPairs(currentBox, provider, this.isNakedPairInColumn);
+
+    this.fillLogicExplanation(nakedPairInRow, nakedPairInColumn, selectedCells);
+
+    const rowChanged = this.handleNakedPair(nakedPairInRow, provider, this.getCellsOfRow);
+    const colChanged = this.handleNakedPair(nakedPairInColumn, provider, this.getCellsOfColumn);
+    return rowChanged || colChanged;
   }
 
-  eliminateSameRowPrediction(center: Position, cellsOfCurrentBox: Cell[], grid: GridProvider) {
-    const predictionsAtFirstRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box - 1);
-    const predictionsAtSecondRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box);
-    const predictionsAtThirdRow = this.getPencilmarksAtRow(cellsOfCurrentBox, center.box + 1);
+  private handleNakedPair(
+    nakedPairInColumn: Map<number, Cell[]>,
+    provider: GridProvider,
+    getRelevantCells: (position: Position, provider: GridProvider) => Cell[]) {
 
-    this.eliminateSameLinePredictionIfPossible(
-      new Position(center.cell, center.box - 1),
-      grid,
-      predictionsAtFirstRow,
-      predictionsAtSecondRow,
-      predictionsAtThirdRow,
-      cellsOfCurrentBox);
-    this.eliminateSameLinePredictionIfPossible(
-      new Position(center.cell, center.box),
-      grid,
-      predictionsAtSecondRow,
-      predictionsAtFirstRow,
-      predictionsAtThirdRow,
-      cellsOfCurrentBox);
-    this.eliminateSameLinePredictionIfPossible(
-      new Position(center.cell, center.box + 1),
-      grid,
-      predictionsAtThirdRow,
-      predictionsAtFirstRow,
-      predictionsAtSecondRow,
-      cellsOfCurrentBox);
-  }
-
-  eliminateSameColumnPrediction(center: Position, cellsOfCurrentBox: Cell[], grid: GridProvider) {
-    const predictionsAtFirstColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell - 1);
-    const predictionsAtSecondColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell);
-    const predictionsAtThirdColumn = this.getPencilmarksAtColumn(cellsOfCurrentBox, center.cell + 1);
-
-    this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.cell - 1, center.box),
-      grid,
-      predictionsAtFirstColumn,
-      predictionsAtSecondColumn,
-      predictionsAtThirdColumn,
-      cellsOfCurrentBox);
-
-    this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.cell, center.box),
-      grid,
-      predictionsAtSecondColumn,
-      predictionsAtFirstColumn,
-      predictionsAtThirdColumn,
-      cellsOfCurrentBox);
-
-    this.eliminateSameColumnPencilmarkIfPossible(
-      new Position(center.cell + 1, center.box),
-      grid,
-      predictionsAtThirdColumn,
-      predictionsAtFirstColumn,
-      predictionsAtSecondColumn,
-      cellsOfCurrentBox);
-  }
-
-  eliminateSameLinePredictionIfPossible(
-    pos: Position,
-    grid: GridProvider,
-    inputLineToCheck: number[],
-    firstLineToRemove: number[],
-    secondLineToRemove: number[],
-    cellsOfCurrentBox: Cell[]
-  ) {
-
-    const lineToCheck = Object.assign([], inputLineToCheck);
-    lineToCheck.filter(x => !firstLineToRemove.includes(x));
-    lineToCheck.filter(x => !secondLineToRemove.includes(x));
-    if (lineToCheck.length > 0) {
-      const cellsOfCurrentRow = grid.getCellsOfCurrentRow(pos, false);
-      cellsOfCurrentRow.filter(x => !cellsOfCurrentBox.includes(x));
-      for (const cellOfCurrentRow of cellsOfCurrentRow) {
-        for (const pencilmark of lineToCheck) {
-          if (!cellOfCurrentRow.isSelected()) {
-            cellOfCurrentRow.removePencilmark(pencilmark);
-            this.resolveCell(cellOfCurrentRow);
+    let somethingChanged = false;
+    if (nakedPairInColumn) {
+      nakedPairInColumn.forEach((value: Cell[], key: number) => {
+        const cells = getRelevantCells(value[0].position, provider);
+        for (const cell of cells) {
+          let isNakedPairCell = false;
+          for (const nakedPair of value) {
+            if (nakedPair.equals(cell)) {
+              isNakedPairCell = true;
+              break;
+            }
           }
+          if (!isNakedPairCell) {
+            const hasChanged = cell.removePencilmark(key);
+            if(hasChanged) {
+              somethingChanged = true;
+            }
+          }
+        }
+      });
+    }
+    return somethingChanged;
+  }
+
+  private getNakedPairs(currentBox: Position, provider: GridProvider, isNakedPair: (cell: Cell[]) => boolean):
+    Map<number, Cell[]> {
+    const cellsOfCurrentBox = provider.getCellsOfCurrentBox(currentBox, false);
+    const nakedPairs = new Map();
+    for (let i = 1; i < 10; i++) {
+      const cells = provider.getAllCellsByPencilmark(cellsOfCurrentBox, i);
+      if (cells.length > 1) {
+        if (isNakedPair(cells)) {
+          nakedPairs.set(i, cells);
         }
       }
     }
+
+    return nakedPairs;
   }
 
-  eliminateSameColumnPencilmarkIfPossible(
-    pos: Position,
-    grid: GridProvider,
-    inputLineToCheck: number[],
-    firstLineToRemove: number[],
-    secondLineToRemove: number[],
-    cellsOfCurrentBox: Cell[]
-  ) {
-
-    const columnToCheck = Object.assign([], inputLineToCheck);
-    columnToCheck.filter(x => !firstLineToRemove.includes(x));
-    columnToCheck.filter(x => !secondLineToRemove.includes(x));
-    if (columnToCheck.length > 0) {
-      const cellsOfCurrentColumn = grid.getCellsOfCurrentColumn(pos, false);
-      cellsOfCurrentColumn.filter(x => !cellsOfCurrentBox.includes(x));
-      for (const cellOfCurrentColumn of cellsOfCurrentColumn) {
-        for (const prediction of columnToCheck) {
-          if (!cellOfCurrentColumn.isSelected()) {
-            cellOfCurrentColumn.removePencilmark(prediction);
-            this.resolveCell(cellOfCurrentColumn);
+  private isNakedPairInColumn(cells: Cell[]): boolean {
+    for (const cell of cells) {
+      for (const cellToCompare of cells) {
+        let isSameRow = false;
+        for (let i = 0; i < 3; i++) {
+          const column = ((i * 3) % 7) + cell.position.cell % 3;
+          if (cellToCompare.position.cell === column) {
+            isSameRow = true;
+            break;
           }
+        }
+        if (!isSameRow) {
+          return false;
         }
       }
     }
+    return true;
   }
 
-  getPencilmarksAtRow(cellsOfCurrentBox: Cell[], line: number): number[] {
-    const cellsOfCurrentRow = cellsOfCurrentBox.filter(cell => cell.position.box === line);
-    return this.getPencilmarks(cellsOfCurrentRow);
-  }
-
-  getPencilmarksAtColumn(cellsOfCurrentBox: Cell[], column: number): number[] {
-    const cellsOfCurrentColumn = cellsOfCurrentBox.filter(cell => cell.position.cell === column);
-    return this.getPencilmarks(cellsOfCurrentColumn);
-  }
-
-  getPencilmarks(cellsOfCurrentRow: Cell[]): number[] {
-    const pencilmarks: number[] = [];
-    for (const cell of cellsOfCurrentRow) {
-      if (cell.pencilmarks != null) {
-        for (const pencilmark of cell.pencilmarks) {
-          if (pencilmarks.includes(pencilmark)) {
-            pencilmarks.push(pencilmark);
+  private isNakedPairInRow(cells: Cell[]): boolean {
+    for (const cell of cells) {
+      for (const cellToCompare of cells) {
+        let isSameRow = false;
+        for (let i = 0; i < 3; i++) {
+          const row = i + (Math.floor(cell.position.cell / 3) * 3);
+          if (cellToCompare.position.cell === row) {
+            isSameRow = true;
+            break;
           }
+        }
+        if (!isSameRow) {
+          return false;
         }
       }
     }
-    return pencilmarks;
+    return true;
   }
 
+  private getCellsOfColumn(position: Position, provider: GridProvider): Cell[] {
+    return provider.getCellsOfCurrentColumn(position, false);
+  }
+
+  private getCellsOfRow(position: Position, provider: GridProvider): Cell[] {
+    return provider.getCellsOfCurrentRow(position, false);
+  }
+
+  private fillLogicExplanation(
+    nakedPairInRow: Map<number, Cell[]>,
+    nakedPairInColumn: Map<number, Cell[]>,
+    selectedCells: Subject<LogicExplanation>) {
+
+    const usedCells: Cell[] = [];
+    nakedPairInRow.forEach((values: Cell[]) => {
+      for (const val of values) {
+        usedCells.push(val);
+      }
+    });
+    nakedPairInColumn.forEach((values: Cell[]) => {
+      for (const val of values) {
+        usedCells.push(val);
+      }
+    });
+    selectedCells.next(new LogicExplanation(Object.assign([], usedCells), this.rule, this.description));
+  }
 }

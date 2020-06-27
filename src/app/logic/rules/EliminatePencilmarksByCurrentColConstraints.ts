@@ -1,4 +1,4 @@
-import { Rule } from '../rule';
+import { CellRule } from '../rule';
 import { GridProvider } from 'src/app/game/grid-provider';
 import { Cell } from 'src/app/common/cell';
 import { EliminatePencilmarksByConstraints } from './EliminatePencilmarksByConstraints';
