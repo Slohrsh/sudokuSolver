@@ -2,7 +2,7 @@ export class Config {
 
   private static INSTANCE: Config;
 
-  sleepTime = 800;
+  sleepTime = 300;
 
   defaultGrid: number[][] = [
     [0, 0, 0, 6, 8, 0, 1, 9, 0],
