@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
 	"start": "node server.js",
-	"postinstall": "ng build --output-path sudoku-solver --aot --prod",
+	"postinstall": "node --max_old_space_size=8000 ./node_modules/@angular/cli/bin/ng build --prod && npm install -g http-server-spa",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
