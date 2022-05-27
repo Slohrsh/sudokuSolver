@@ -6,11 +6,11 @@ const server = require('http').Server(app);
 
 
 // Serve only the static files form the angularapp directory
-app.use(express.static(__dirname + '/sudoku-solver'));
+app.use(express.static(__dirname + '/dist/sudoku-solver'));
  
 app.get('/*', function(req,res) {
  
-res.sendFile(path.join(__dirname+'/sudoku-solver/index.html'));
+res.sendFile(path.join(__dirname+'/dist/sudoku-solver/index.html'));
 });
  
 // Start the app by listening on the default Heroku port
