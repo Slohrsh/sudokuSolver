@@ -2,8 +2,7 @@
   "name": "sudoku-solver",
   "version": "0.0.0",
   "scripts": {
-	"start": "node server.js",
-	"postinstall": "ng build --output-path your-application-name --aot --prod",
+	  "start": "node serve",
     "ng": "ng",
     "build": "ng build",
     "test": "ng test",
